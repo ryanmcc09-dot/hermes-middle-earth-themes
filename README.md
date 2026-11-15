@@ -83,8 +83,14 @@ registers any pointer-like listener, uses network/storage/audio/image APIs, exce
 3. Add the theme to `ORDER` in `tools/build.py` and the scene to the table in `tests/scene-contract.cjs`.
 4. `sh tools/check.sh`, then look at it in the real app in both modes at a wide and a narrow window.
 
+## Troubleshooting
+
+- **The scene shows but replies have no backing panel, the text is in the app's usual font, and the scene looks very bright.** The theme's stylesheet isn't being applied. Version 1.0.0 relied on Desktop to apply the stylesheet through the theme's `customCSS` field, which some Desktop versions don't do for plugin-contributed themes. **Since 1.0.1 the plugin installs its own stylesheet** (a `<style id="middle-earth-theme-css">` tag, present only while one of these themes is active). Update `plugin.js` to 1.0.1 or later and reload (**Ctrl+K → Reload desktop plugins**).
+- While one of these themes is active, the page root carries `data-me-version="<version>"`, so a developer-tools inspection shows which version is running.
+
 ## What was and wasn't verified
 
+- Readability was **measured**, not eyeballed: for every text line in a realistic conversation, the real text color was compared (WCAG contrast) against the scene pixels directly behind it, for all four themes in both modes. With the stylesheet applied, **0% of those pixels fall below 4.5:1 and the worst 5% are at 8.1:1 or better.** With the stylesheet missing (scene at full strength, no backing), 34.5% of the pixels behind the text in Lothlórien dark fall below 4.5:1, so the backing is doing real work.
 - Verified: all scenes pass the contract; the built plugin passes the lifecycle test; the contract test was checked against deliberately planted defects (a mouse listener, a missing startup rollback) and fails on both; all eight theme × mode combinations were viewed in an isolated build of the real Hermes Desktop interface with the shared theme CSS applied.
 - Not verified: installation on a separate native Desktop app (Windows or otherwise); behaviour on the real backend-driven new-chat screen (the test build had no backend, so the empty-chat element was simulated); real-display frame pacing (scene logic holds 24 fps in simulation; the headless test browser could not show true display rate).
 - The scenes' selectors for app chrome (`data-slot` hooks and a few Tailwind class names for the top bar and window controls) are not a public API. If a Desktop update renames them, those touches fall back to the plain palette; the scenes themselves keep working.

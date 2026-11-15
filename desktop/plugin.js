@@ -2506,13 +2506,16 @@ ${T} ::selection { background: color-mix(in srgb, var(--theme-midground) 38%, tr
 const THEMES = THEME_DATA.map(t => ({
   ...t,
   make: MAKERS[t.name],
+  // The stylesheet is installed by this plugin itself (see watchScenes), not through the theme's
+  // customCSS field. Desktop versions differ in how (or whether) they apply that field to a
+  // plugin-contributed theme; owning the <style> tag makes the result identical everywhere.
+  css: makeCSS(t.name, t.sidebarScrim),
   desktopTheme: {
     name: t.name,
     label: t.label,
     description: t.description,
     colors: t.colors,
-    darkColors: t.darkColors,
-    customCSS: makeCSS(t.name, t.sidebarScrim)
+    darkColors: t.darkColors
   }
 }))
 
@@ -2528,8 +2531,12 @@ const setQuote = theme => {
   }
 }
 
+const VERSION = '1.0.1'
+const STYLE_ID = 'middle-earth-theme-css'
+
 function watchScenes() {
   const root = document.documentElement
+  let styleEl = null
   let stage = null
   let canvas = null
   let active = null
@@ -2537,6 +2544,24 @@ function watchScenes() {
   let lastDark = null
   let pending = 0
   let disposed = false
+
+  // One <style> tag, present only while one of these themes is active, holding that theme's CSS.
+  const setStyle = theme => {
+    if (!theme) {
+      if (styleEl) styleEl.remove()
+      styleEl = null
+      return
+    }
+    if (!styleEl) {
+      styleEl = document.createElement('style')
+      styleEl.id = STYLE_ID
+      document.head.appendChild(styleEl)
+    }
+    if (styleEl.dataset.theme !== theme.name) {
+      styleEl.dataset.theme = theme.name
+      styleEl.textContent = theme.css
+    }
+  }
 
   const teardown = () => {
     if (stage) stage.destroy()
@@ -2551,7 +2576,10 @@ function watchScenes() {
     const theme = resolveTheme(root.dataset.hermesTheme || '')
     const dark = root.classList.contains('dark')
     if (theme !== failedFor) failedFor = null
+    setStyle(theme)
     setQuote(theme)
+    if (theme) root.dataset.meVersion = VERSION
+    else delete root.dataset.meVersion
 
     // Switching between two of these themes swaps the scene; there is never more than one canvas.
     if (active && theme !== active) teardown()
@@ -2585,6 +2613,8 @@ function watchScenes() {
 
   return () => {
     disposed = true
+    setStyle(null)
+    delete root.dataset.meVersion
     setQuote(null)
     observer.disconnect()
     cancelAnimationFrame(pending)
