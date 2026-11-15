@@ -26,7 +26,7 @@ function setup() {
     classList: { add: c => classes.add(c), remove: c => classes.delete(c), contains: c => classes.has(c) },
     style: { getPropertyValue: k => styleProps.get(k) || '', setProperty: (k, v) => styleProps.set(k, v), removeProperty: k => styleProps.delete(k) },
   };
-  const body = { children: [], prepends: 0, prepend(el) { this.prepends++; el.parent = this; this.children.unshift(el); } };
+  const body = { children: [], canvasPrepends: 0, prepend(el) { if (el.tag === 'canvas') this.canvasPrepends++; el.parent = this; this.children.unshift(el); } };
   const head = { children: [], appendChild(el) { el.parent = this; this.children.push(el); return el; } };
   h.doc.documentElement = root; h.doc.body = body; h.doc.head = head;
   const observers = [];
@@ -42,7 +42,8 @@ function setup() {
   const trigger = (times = 1) => { for (let i = 0; i < times; i++) observers.filter(o => o.live).forEach(o => o.cb()); h.flush(2, 16); };
   const canvases = () => body.children.filter(c => c.tag === 'canvas' && !c.removed);
   const styles = () => head.children.filter(c => c.tag === 'style' && !c.removed);
-  return { h, root, body, head, styles, classes, styleProps, observers, registered, disposers, trigger, canvases, plugin: sandbox.__plugin };
+  const veils = () => body.children.filter(c => c.tag === 'div' && c.dataset && 'meVeil' in c.dataset && !c.removed);
+  return { h, root, body, head, styles, veils, classes, styleProps, observers, registered, disposers, trigger, canvases, plugin: sandbox.__plugin };
 }
 
 const out = [];
@@ -74,7 +75,17 @@ const out = [];
   assert.equal(t.styles().length, 1, 'exactly one stylesheet'); const css0 = t.styles()[0];
   assert.equal(css0.id, 'middle-earth-theme-css'); assert.ok(css0.textContent.includes('@font-face'), 'font embedded');
   assert.ok(css0.textContent.includes('aui_assistant-message-root'), 'reply backing rule present');
-  assert.ok(css0.textContent.includes('canvas[data-me-scene]'), 'scene dimming rule present');
+  assert.ok(css0.textContent.includes('[data-me-veil]'), 'veil dimming rule present');
+  // The scene must never be translucent: Desktop's glass mode makes the window material show through
+  // any translucent paint (only while the window is focused). Dimming is a solid veil instead.
+  assert.ok(/canvas\[data-me-scene\]\s*\{\s*opacity:\s*1\s*!important/.test(css0.textContent), 'canvas pinned fully opaque');
+  assert.ok(!/canvas\[data-me-scene\][^{]*\{[^}]*opacity:\s*0?\.\d/.test(css0.textContent), 'no rule makes the canvas translucent');
+  const veilDecls = [...css0.textContent.matchAll(/--me-veil:\s*([^;]+);/g)].map(m => m[1].trim());
+  assert.equal(veilDecls.length, 2, 'a light and a dark veil color: ' + veilDecls.join(' | '));
+  for (const v of veilDecls) assert.match(v, /^#[0-9a-f]{6}$/i, 'every veil color is an opaque hex, got: ' + v);
+  assert.equal(t.veils().length, 1, 'exactly one veil'); assert.equal(t.veils().length, t.canvases().length, 'one veil per canvas');
+  const kids = t.body.children.filter(c => !c.removed); const ci = kids.indexOf(t.canvases()[0]), vi = kids.indexOf(t.veils()[0]);
+  assert.ok(ci >= 0 && vi > ci, 'veil sits AFTER the canvas in the page so it paints on top of it');
   assert.ok(!/pointer-events:\s*auto/.test(css0.textContent), 'CSS must not enable pointer capture');
   const yamlVersion = fs.readFileSync(path.join(__dirname, '..', 'plugin.yaml'), 'utf8').match(/^version:\s*"?([\d.]+)"?/m)[1];
   assert.equal(t.root.dataset.meVersion, yamlVersion, 'in-app version marker matches plugin.yaml');
@@ -82,25 +93,27 @@ const out = [];
     t.root.dataset.hermesTheme = n; t.trigger();
     assert.equal(t.canvases().length, 1, 'one canvas after switching to ' + n);
     assert.equal(t.canvases()[0].dataset.meScene, n);
+    assert.equal(t.veils().length, 1, 'one veil after switching to ' + n);
     assert.equal(t.styles().length, 1, 'one stylesheet after switching to ' + n);
     assert.ok(t.styles()[0].textContent.includes(`data-hermes-theme="${n}"`), 'stylesheet is for ' + n);
     for (const other of NAMES.filter(x => x !== n)) assert.ok(!t.styles()[0].textContent.includes(`data-hermes-theme="${other}"`), n + ' stylesheet leaks ' + other);
     t.root.dataset.hermesTheme = n + '-accent-c8ad70'; t.trigger();
     assert.equal(t.canvases().length, 1, 'one canvas on accent retint of ' + n);
+    assert.equal(t.veils().length, 1, 'accent retint keeps exactly one veil');
     assert.equal(t.styles().length, 1, 'accent retint keeps exactly one stylesheet');
     assert.ok(t.styles()[0].textContent.includes(`data-hermes-theme="${n}"`), 'retint keeps ' + n + ' stylesheet');
     assert.equal(t.canvases()[0].dataset.meScene, n);
   }
   // Light/dark toggles refresh the live scene without creating a new one.
-  const before = t.body.prepends;
+  const before = t.body.canvasPrepends;
   for (let i = 0; i < 6; i++) { i % 2 ? t.classes.add('dark') : t.classes.delete('dark'); t.trigger(); }
-  assert.equal(t.body.prepends, before, 'mode changes must not recreate the canvas'); assert.equal(t.canvases().length, 1);
+  assert.equal(t.body.canvasPrepends, before, 'mode changes must not recreate the canvas'); assert.equal(t.canvases().length, 1);
   // Bursts of mutations coalesce into one sync.
   t.root.dataset.hermesTheme = 'mono'; t.trigger();
-  assert.equal(t.canvases().length, 0, 'other themes remove the scene'); assert.equal(t.styleProps.has('--me-quote'), false, 'quote cleared');
+  assert.equal(t.canvases().length, 0, 'other themes remove the scene'); assert.equal(t.veils().length, 0, 'other themes remove the veil'); assert.equal(t.styleProps.has('--me-quote'), false, 'quote cleared');
   assert.equal(t.styles().length, 0, 'other themes remove the stylesheet'); assert.equal(t.root.dataset.meVersion, undefined, 'version marker cleared');
-  const p0 = t.body.prepends; t.root.dataset.hermesTheme = 'moria-gate'; t.trigger(25);
-  assert.equal(t.body.prepends, p0 + 1, '25 rapid mutations create exactly one canvas');
+  const p0 = t.body.canvasPrepends; t.root.dataset.hermesTheme = 'moria-gate'; t.trigger(25);
+  assert.equal(t.body.canvasPrepends, p0 + 1, '25 rapid mutations create exactly one canvas');
   out.push('switching: exactly 1 canvas across 3 rounds x 4 themes x accent retints; mode toggles do not recreate; bursts coalesce; other themes clear the scene');
 }
 
@@ -109,11 +122,11 @@ const out = [];
   const t = setup();
   t.h.mode.failRender = true;
   t.root.dataset.hermesTheme = 'rivendell-vale'; t.trigger();
-  assert.equal(t.canvases().length, 0, 'failed scene leaves no canvas');
+  assert.equal(t.canvases().length, 0, 'failed scene leaves no canvas'); assert.equal(t.veils().length, 0, 'failed scene leaves no veil');
   assert.equal(t.styles().length, 1, 'the stylesheet still applies even if the scene cannot start');
   assert.equal(t.h.totalListeners(), 0, 'failed scene leaves no listeners');
-  const p = t.body.prepends; t.trigger(8);
-  assert.equal(t.body.prepends, p, 'no retry storm for the same theme');
+  const p = t.body.canvasPrepends; t.trigger(8);
+  assert.equal(t.body.canvasPrepends, p, 'no retry storm for the same theme');
   t.h.mode.failRender = false; t.root.dataset.hermesTheme = 'lothlorien-glade'; t.trigger();
   assert.equal(t.canvases().length, 1); assert.equal(t.canvases()[0].dataset.meScene, 'lothlorien-glade');
   out.push('failure: no canvas/listeners left, no retry storm, recovers on the next theme');
@@ -129,7 +142,7 @@ const out = [];
   assert.equal(t.styles().length, 1, 'stylesheet present while active');
   t.disposers[0](); t.disposers[0]();
   assert.equal(t.styles().length, 0, 'stylesheet removed on disposal'); assert.equal(t.root.dataset.meVersion, undefined, 'version marker removed');
-  assert.equal(t.canvases().length, 0, 'canvas removed'); assert.equal(t.h.totalListeners(), 0, 'listeners removed');
+  assert.equal(t.canvases().length, 0, 'canvas removed'); assert.equal(t.veils().length, 0, 'veil removed'); assert.equal(t.h.totalListeners(), 0, 'listeners removed');
   assert.equal(t.h.observed(), 0, 'ResizeObservers removed'); assert.equal(t.observers.filter(o => o.live).length, 0, 'MutationObserver removed');
   assert.equal(t.h.queue.size, 0, 'no animation callbacks left'); assert.equal(t.styleProps.has('--me-quote'), false);
   const bad = t.h.allListenerTypes().filter(x => /^(pointer|mouse|touch|wheel|click|drag)/i.test(x));

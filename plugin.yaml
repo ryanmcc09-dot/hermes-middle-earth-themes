@@ -1,5 +1,5 @@
 name: hermes-middle-earth-themes
-version: "1.0.1"
+version: "1.0.2"
 description: "Four animated Middle-earth themes for Hermes Desktop: the Shire, Rivendell, Moria and Lothlorien. Each paints an original Canvas2D scene behind the app. No network, no mouse tracking. Unofficial; not affiliated with the Tolkien Estate, any studio, or Nous Research."
 author: ryanmcc09-dot
 manifest_version: 1

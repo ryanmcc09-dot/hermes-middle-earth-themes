@@ -2342,7 +2342,7 @@ const MAKERS = {
   'lothlorien-glade': createLothlorienScene
 }
 
-const makeCSS = (name, scrim = 0.64) => {
+const makeCSS = (name, scrim = 0.64, veilLight = '#ffffff', veilDark = '#000000') => {
   const T = `:root:is([data-hermes-theme="${name}"], [data-hermes-theme^="${name}-accent-"])`
   return `
 ${FONT_CSS}
@@ -2367,8 +2367,20 @@ ${T} [data-glass-opaque], ${T} [data-glass-raised] {
   --ui-editor-surface-background: var(--ui-bg-chrome) !important;
   --ui-sidebar-surface-background: var(--ui-bg-sidebar) !important;
 }
-${T} canvas[data-me-scene] { opacity: .5; transition: opacity 900ms ease; }
-${T}:has([data-slot="aui_intro"]) canvas[data-me-scene] { opacity: 1; }
+/* The scene must NEVER be see-through. In Desktop's glass mode the page background is transparent and the
+   native window material (Windows Mica/Acrylic) shows through any translucent paint, but only while the
+   window is focused, so a half-transparent scene looked like a colored haze that vanished when the window
+   lost focus. The canvas is therefore always fully opaque; calming it behind a conversation is done by a
+   solid-color veil laid on top of it. */
+${T} { --me-veil: ${veilLight}; }
+${T}.dark { --me-veil: ${veilDark}; }
+${T} canvas[data-me-scene] { opacity: 1 !important; }
+${T} [data-me-veil] {
+  background: var(--me-veil);
+  opacity: .5;
+  transition: opacity 900ms ease;
+}
+${T}:has([data-slot="aui_intro"]) [data-me-veil] { opacity: 0; }
 ${T} [data-slot="composer-surface"] {
   background: var(--ui-bg-editor) !important;
   border: 1px solid var(--me-rule) !important;
@@ -2495,9 +2507,9 @@ ${T} :is([data-slot="dropdown-menu-content"], [data-slot="dialog-content"], [dat
 }
 ${T} ::selection { background: color-mix(in srgb, var(--theme-midground) 38%, transparent); }
 @media (max-width: 700px) { ${T} [data-slot="aui_intro"]::after { font-size: .85rem; max-width: 30ch; } }
-@media (prefers-reduced-motion: reduce) { ${T} canvas[data-me-scene] { transition: none; } }
+@media (prefers-reduced-motion: reduce) { ${T} [data-me-veil] { transition: none; } }
 @media (forced-colors: active) {
-  ${T} canvas[data-me-scene] { display: none; }
+  ${T} :is(canvas[data-me-scene], [data-me-veil]) { display: none; }
   ${T} [data-slot="aui_intro"]::after { color: CanvasText; text-shadow: none; }
 }
 `
@@ -2509,7 +2521,7 @@ const THEMES = THEME_DATA.map(t => ({
   // The stylesheet is installed by this plugin itself (see watchScenes), not through the theme's
   // customCSS field. Desktop versions differ in how (or whether) they apply that field to a
   // plugin-contributed theme; owning the <style> tag makes the result identical everywhere.
-  css: makeCSS(t.name, t.sidebarScrim),
+  css: makeCSS(t.name, t.sidebarScrim, t.colors.background, t.darkColors.background),
   desktopTheme: {
     name: t.name,
     label: t.label,
@@ -2531,7 +2543,7 @@ const setQuote = theme => {
   }
 }
 
-const VERSION = '1.0.1'
+const VERSION = '1.0.2'
 const STYLE_ID = 'middle-earth-theme-css'
 
 function watchScenes() {
@@ -2539,6 +2551,7 @@ function watchScenes() {
   let styleEl = null
   let stage = null
   let canvas = null
+  let veil = null
   let active = null
   let failedFor = null
   let lastDark = null
@@ -2566,7 +2579,8 @@ function watchScenes() {
   const teardown = () => {
     if (stage) stage.destroy()
     if (canvas) canvas.remove()
-    stage = canvas = active = null
+    if (veil) veil.remove()
+    stage = canvas = veil = active = null
     lastDark = null
   }
 
@@ -2586,6 +2600,13 @@ function watchScenes() {
     if (!theme || failedFor === theme) return
 
     if (!stage) {
+      // Veil first, canvas second: both sit at z-index -1, and the later one in the page paints on top,
+      // so the canvas lands FIRST in the DOM (below) and the veil right after it (above).
+      veil = document.createElement('div')
+      veil.setAttribute('aria-hidden', 'true')
+      veil.dataset.meVeil = ''
+      veil.style.cssText = 'position:fixed;inset:0;z-index:-1;pointer-events:none;'
+      document.body.prepend(veil)
       canvas = document.createElement('canvas')
       canvas.setAttribute('aria-hidden', 'true')
       canvas.dataset.meScene = theme.name
@@ -2598,7 +2619,8 @@ function watchScenes() {
       } catch (error) {
         console.warn(`[middle-earth-themes] ${theme.name} scene unavailable; keeping the palette.`, error)
         canvas.remove()
-        canvas = stage = null
+        veil.remove()
+        canvas = veil = stage = null
         failedFor = theme
       }
     } else if (dark !== lastDark) {

@@ -9,7 +9,7 @@ Four animated themes, one plugin. Each paints an original illustrated scene behi
 | **Moria** · `moria-gate` | Starlit silver-runed doors beside a black lake, campfire, embers | Pale pre-dawn mist |
 | **Lothlórien** · `lothlorien-glade` | Hushed night under giant mallorn trees, silver lanterns, motes of light | Sunlit golden-green wood, god-rays |
 
-The scene is at full strength on an empty chat. Once a conversation starts it stays visible (about half strength), and the assistant's replies sit on a soft translucent backing so the words stay easy to read. That backing is dark in dark mode and light in light mode.
+The scene is at full strength on an empty chat. Once a conversation starts it stays visible (dimmed to about half strength by a solid veil, never by transparency), and the assistant's replies sit on a soft translucent backing so the words stay easy to read. That backing is dark in dark mode and light in light mode.
 
 **Two voices:** the assistant reads in a book serif (Palatino Linotype / Palatino / Georgia, all system fonts), while your own messages and the text box keep the app's clean sans. Code stays monospace. To change the assistant font, edit `ASSISTANT_FONT` at the top of `src/shell.js` and rebuild.
 
@@ -86,6 +86,7 @@ registers any pointer-like listener, uses network/storage/audio/image APIs, exce
 ## Troubleshooting
 
 - **The scene shows but replies have no backing panel, the text is in the app's usual font, and the scene looks very bright.** The theme's stylesheet isn't being applied. Version 1.0.0 relied on Desktop to apply the stylesheet through the theme's `customCSS` field, which some Desktop versions don't do for plugin-contributed themes. **Since 1.0.1 the plugin installs its own stylesheet** (a `<style id="middle-earth-theme-css">` tag, present only while one of these themes is active). Update `plugin.js` to 1.0.1 or later and reload (**Ctrl+K → Reload desktop plugins**).
+- **A colored haze or "rainbow aura" over a conversation that disappears when the window loses focus (or when you use a screenshot tool).** That was the Windows window material (Mica/Acrylic, from Hermes's **Window Translucency** setting) showing through a half-transparent scene. Windows only draws that material while the window is focused. Fixed in 1.0.2: the scene canvas is always fully opaque and a solid-color veil on top does the dimming, so nothing can show through. If you still see it, turn **Window Translucency** off in Settings → Appearance and tell me.
 - While one of these themes is active, the page root carries `data-me-version="<version>"`, so a developer-tools inspection shows which version is running.
 
 ## What was and wasn't verified
