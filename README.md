@@ -9,7 +9,9 @@ Four animated themes, one plugin. Each paints an original illustrated scene behi
 | **Moria** · `moria-gate` | Starlit silver-runed doors beside a black lake, campfire, embers | Pale pre-dawn mist |
 | **Lothlórien** · `lothlorien-glade` | Hushed night under giant mallorn trees, silver lanterns, motes of light | Sunlit golden-green wood, god-rays |
 
-The scene is at full strength on an empty chat and dims behind a conversation so text stays readable.
+The scene is at full strength on an empty chat. Once a conversation starts it stays visible (about half strength), and the assistant's replies sit on a soft translucent backing so the words stay easy to read. That backing is dark in dark mode and light in light mode.
+
+**Two voices:** the assistant reads in a book serif (Palatino Linotype / Palatino / Georgia, all system fonts), while your own messages and the text box keep the app's clean sans. Code stays monospace. To change the assistant font, edit `ASSISTANT_FONT` at the top of `src/shell.js` and rebuild.
 
 ## Principles (enforced by tests)
 

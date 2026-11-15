@@ -10,6 +10,9 @@
 import { THEMES_AREA } from '@hermes/plugin-sdk'
 
 const FONT_FAMILY = '"Middle-earth Decorative"'
+// Two voices: the assistant reads in a book serif (system fonts, nothing to download), while your own
+// messages and the text box keep the app's clean sans. Code stays monospace everywhere.
+const ASSISTANT_FONT = '"Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif'
 const FONT_CSS = "@font-face{font-family:'Middle-earth Decorative';src:url(data:font/woff2;base64,__FONT_B64__) format('woff2');font-style:normal;font-weight:400;font-display:swap}"
 const THEME_DATA = __THEME_DATA__
 const MAKERS = __MAKERS__
@@ -39,7 +42,7 @@ ${T} [data-glass-opaque], ${T} [data-glass-raised] {
   --ui-editor-surface-background: var(--ui-bg-chrome) !important;
   --ui-sidebar-surface-background: var(--ui-bg-sidebar) !important;
 }
-${T} canvas[data-me-scene] { opacity: .20; transition: opacity 900ms ease; }
+${T} canvas[data-me-scene] { opacity: .5; transition: opacity 900ms ease; }
 ${T}:has([data-slot="aui_intro"]) canvas[data-me-scene] { opacity: 1; }
 ${T} [data-slot="composer-surface"] {
   background: var(--ui-bg-editor) !important;
@@ -98,6 +101,22 @@ ${T} [data-slot="aui_intro"]::after {
   text-shadow: 0 1px 14px var(--me-halo);
 }
 ${T} [data-slot="aui_assistant-message-content"] :is(p,li) { line-height: 1.75; }
+/* The assistant's replies sit on a soft translucent backing, so the scene can stay bright behind the
+   conversation while the words stay easy to read. Negative margin cancels the padding: no layout shift. */
+${T} [data-slot="aui_assistant-message-root"] {
+  margin: -.55rem -.9rem;
+  padding: .55rem .9rem;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--ui-bg-chrome) 70%, transparent);
+}
+${T} [data-slot="aui_assistant-message-content"] {
+  font-family: ${ASSISTANT_FONT};
+  font-size: 1.04em;
+}
+${T} [data-slot="aui_assistant-message-content"] :is(pre, code, kbd) { font-size: .9em; }
+@media (prefers-reduced-transparency: reduce) {
+  ${T} [data-slot="aui_assistant-message-root"] { background: var(--ui-bg-chrome); }
+}
 ${T} [data-slot="aui_assistant-message-content"] :is(h1,h2) {
   padding-bottom: .3em;
   background: linear-gradient(90deg, var(--me-rule), transparent 85%) left bottom / 100% 1px no-repeat;
