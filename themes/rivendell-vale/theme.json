@@ -1,0 +1,11 @@
+{
+  "name": "rivendell-vale",
+  "label": "Rivendell · The Last Homely House",
+  "description": "A hidden Elven valley: a waterfall, graceful terraces and bridges, falling autumn leaves and warm lanterns.",
+  "scene": "rivendell",
+  "factory": "createRivendellScene",
+  "quotes": [
+    "The Road goes ever on and on.",
+    "Roads go ever ever on, over rock and under tree."
+  ]
+}

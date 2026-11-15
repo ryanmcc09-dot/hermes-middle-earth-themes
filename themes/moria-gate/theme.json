@@ -1,0 +1,11 @@
+{
+  "name": "moria-gate",
+  "label": "Moria · The Western Gate",
+  "description": "Starlit doors of stone beside a black lake: silver ithildin glow, rising embers and slow ripples.",
+  "scene": "moria",
+  "factory": "createMoriaScene",
+  "quotes": [
+    "Speak, friend, and enter.",
+    "Fly, you fools!"
+  ]
+}

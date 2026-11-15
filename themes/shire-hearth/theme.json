@@ -1,0 +1,14 @@
+{
+  "name": "shire-hearth",
+  "label": "The Shire · Hearth & Hills",
+  "description": "Rolling green hills, a round green door, chimney smoke, a turning windmill and fireflies. Twilight in dark mode, bright morning in light mode.",
+  "scene": "shire",
+  "factory": "createShireScene",
+  "quotes": [
+    "Not all those who wander are lost.",
+    "It's a dangerous business, Frodo, going out your door.",
+    "All we have to decide is what to do with the time that is given us.",
+    "Where there's life there's hope, as my Gaffer says.",
+    "Short cuts make long delays."
+  ]
+}

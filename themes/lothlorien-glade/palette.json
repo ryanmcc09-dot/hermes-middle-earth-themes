@@ -1,0 +1,18 @@
+{
+  "dark": {
+    "background": "#0d2023",
+    "foreground": "#f1e8c9",
+    "primary": "#e2c566",
+    "mutedForeground": "#a9b8ae",
+    "border": "#2d4b47",
+    "card": "#132a2c"
+  },
+  "light": {
+    "background": "#f2efcb",
+    "foreground": "#2b4325",
+    "primary": "#7a5d0c",
+    "mutedForeground": "#55633f",
+    "border": "#c9c48f",
+    "card": "#faf7dc"
+  }
+}

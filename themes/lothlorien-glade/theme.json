@@ -1,0 +1,12 @@
+{
+  "name": "lothlorien-glade",
+  "label": "Lothlórien · The Golden Wood",
+  "description": "Towering mallorn trees, silver lanterns, drifting golden leaves and floating motes of light.",
+  "scene": "lothlorien",
+  "factory": "createLothlorienScene",
+  "quotes": [
+    "Still round the corner there may wait a new road or a secret gate.",
+    "I will take the Ring, though I do not know the way."
+  ],
+  "sidebarScrim": 0.84
+}
