@@ -33,7 +33,7 @@ Desktop plugins live on the **computer that runs the Desktop app**, not on a rem
 
 Terminal alternative: `hermes plugins install ryanmcc09-dot/hermes-middle-earth-themes`
 
-**This repository is private.** The machine needs `git` and GitHub access that can read it (for example, run `gh auth login` once, or use a credential helper with a token that has repo access). If that is a hassle on a given machine, use Option B.
+The repository is public, so no GitHub login is needed, but the machine does need `git` installed. If that is a hassle on a given machine, use Option B.
 
 Update later: `hermes plugins update hermes-middle-earth-themes`
 
@@ -99,4 +99,8 @@ registers any pointer-like listener, uses network/storage/audio/image APIs, exce
 
 Original artwork; unofficial fan project, not affiliated with the Tolkien Estate, any film studio or publisher, Nous Research or the Hermes Agent project. Quotes are short lines from Tolkien's books. The whole-window theme approach is informed by [Borealis](https://github.com/Adolanium/hermes-borealis) (MIT). Headings use Cinzel Decorative (SIL OFL). Full notices: `THIRD-PARTY-NOTICES.txt`.
 
-No license has been chosen for this repository's own code and artwork yet, so by default all rights are reserved.
+## License
+
+**CC0 1.0 Universal (public domain dedication)** for everything original here: code, scenes, palettes, tests, tools and docs. Use it for anything, no permission or credit needed. See `LICENSE`.
+
+CC0 does not cover other people's rights, which stay as they are: the **Tolkien quotations** and the **names/marks** (Middle-earth and others) belong to their owners, the **font** is under the SIL OFL, and the parts modeled on **Borealis** keep its MIT notice. Details, including how to remove the quotes if you want to reuse this commercially, are at the top of `THIRD-PARTY-NOTICES.txt`.

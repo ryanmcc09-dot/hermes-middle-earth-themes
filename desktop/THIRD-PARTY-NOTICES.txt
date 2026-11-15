@@ -1,3 +1,25 @@
+LICENSE SCOPE (read this first)
+
+The ORIGINAL work in this repository (the plugin shell, the four scenes, palettes, tests, build
+tools and documentation) is dedicated to the public domain under CC0 1.0 Universal (see the
+LICENSE file; SPDX: CC0-1.0). Use it for anything, with no permission and no credit required.
+
+CC0 does NOT cover, and cannot override, the following. They keep their own terms:
+
+  1. QUOTATIONS from J.R.R. Tolkien's books shown under the title. They remain the property of
+     their rights holders. They are short lines included as an unofficial fan tribute; if you
+     redistribute or build on this project commercially, remove them (themes/*/theme.json,
+     "quotes") or get your own permission.
+  2. NAMES AND MARKS. "Middle-earth", "The Lord of the Rings", and names of places and characters
+     are owned by others (for example Middle-earth Enterprises / the Tolkien Estate). CC0 grants
+     no rights in any trademark. This project is an unofficial fan project and is not affiliated
+     with, endorsed by, or sponsored by any of them. The scenes are original illustrations and
+     are not copies of film or studio artwork.
+  3. THE BOREALIS-INFORMED PARTS (section 1 below): the way a theme paints a canvas behind the
+     whole app, plus a few app-surface CSS rules, follow Borealis (MIT). That MIT notice must stay
+     with any copy of those parts.
+  4. THE EMBEDDED FONT (section 2 below): Cinzel Decorative, under the SIL Open Font License 1.1.
+
 MIDDLE-EARTH THEMES FOR HERMES DESKTOP: THIRD-PARTY NOTICES
 
 All four scenes (Shire, Rivendell, Moria, Lothlorien) are original Canvas2D artwork
